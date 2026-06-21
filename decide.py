@@ -1,13 +1,16 @@
 """
 decide.py
 
-A simple way to make decisions on the items in your waiting list,
-without needing to know how the agent stores things internally.
+Goes through your waiting list ONE item at a time, shows you the full
+email (not just the subject), and asks what you want to do about it.
 
 Run it any time after pipeline.py with:
     python decide.py
 
-It shows you the list, you type a number, you pick what to do. That's it.
+For each item you can:
+  - type a decision (e.g. "cancel", "keep", "reply", "ignore", "act")
+  - press Enter alone to SKIP it (come back to it next time)
+  - type "q" to stop entirely for now
 """
 
 import state_store
@@ -19,6 +22,18 @@ DECISION_OPTIONS = {
 }
 
 
+def show_email(item, index, total):
+    print("\n" + "=" * 60)
+    print(f"Item {index} of {total}   [{item['category']}]")
+    print("=" * 60)
+    print(f"From:    {item.get('from_name', 'unknown')} <{item.get('from_email', '')}>")
+    print(f"Account: {item.get('account', '')}")
+    print(f"Subject: {item['subject']}")
+    body = item.get("body", "")
+    if body:
+        print(f"\n{body}")
+
+
 def main():
     pending = state_store.load_pending()
 
@@ -26,39 +41,42 @@ def main():
         print("Nothing is waiting for a decision right now.")
         return
 
-    print(f"You have {len(pending)} items waiting for a decision:\n")
+    print(f"You have {len(pending)} items waiting for a decision.")
+    print("For each one: type your decision, press Enter to skip it, or type 'q' to stop.\n")
+
+    decided_count = 0
+
     for i, item in enumerate(pending, start=1):
-        print(f"{i}. [{item['category']}] '{item['subject']}' from {item['from_name']}")
-
-    print("\nType a number to decide on it, or just press Enter to stop.")
-
-    while True:
-        choice = input("\nWhich number? ").strip()
-        if not choice:
-            break
-
-        try:
-            index = int(choice) - 1
-            item = pending[index]
-        except (ValueError, IndexError):
-            print("That's not a valid number, try again.")
-            continue
+        show_email(item, i, len(pending))
 
         options = DECISION_OPTIONS.get(item["category"], ["keep", "ignore"])
-        decision = input(f"What do you want to do? ({' / '.join(options)}): ").strip().lower()
+        prompt = f"\nWhat do you want to do? ({' / '.join(options)}, Enter to skip, q to stop): "
 
-        if decision not in options:
-            print(f"Please type one of: {', '.join(options)}")
-            continue
+        while True:
+            answer = input(prompt).strip().lower()
 
-        # This is the important part: we save the decision using the
-        # SAME key the agent itself uses internally (vendor+account for
-        # subscriptions/deals, the message's own id for needs_reply) -
-        # you never have to think about that part, it's handled here.
-        state_store.save_decision(item["decision_key"], decision)
-        print(f"Saved: '{item['subject']}' -> {decision}")
+            if answer == "q":
+                print(f"\nStopped. You decided on {decided_count} item(s) this time.")
+                print("Run pipeline.py to see these applied (drafts get created too, if AI is on).")
+                return
 
-    print("\nDone. Run pipeline.py again to see these applied (drafts get created too, if AI is on).")
+            if answer == "":
+                print("Skipped - it'll show up again next time.")
+                break
+
+            if answer in options:
+                # Same key the agent uses internally (vendor+account for
+                # subscriptions/deals, the message's own id for needs_reply) -
+                # you never have to think about that part, it's handled here.
+                state_store.save_decision(item["decision_key"], answer)
+                print(f"Saved: {answer}")
+                decided_count += 1
+                break
+
+            print(f"Please type one of: {', '.join(options)} (or Enter to skip, q to stop)")
+
+    print(f"\nAll done! You decided on {decided_count} of {len(pending)} item(s).")
+    print("Run pipeline.py to see these applied (drafts get created too, if AI is on).")
 
 
 if __name__ == "__main__":

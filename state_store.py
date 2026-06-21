@@ -22,6 +22,7 @@ STATE_FOLDER = os.path.join(os.path.dirname(__file__), "state")
 CHECKPOINT_FILE = os.path.join(STATE_FOLDER, "checkpoint.json")
 DECISIONS_FILE = os.path.join(STATE_FOLDER, "decisions.json")
 PENDING_FILE = os.path.join(STATE_FOLDER, "pending.json")
+DRAFTS_FILE = os.path.join(STATE_FOLDER, "drafts.json")
 
 
 def _load_json(path, default):
@@ -71,6 +72,18 @@ def save_pending(pending_list):
 
 def reset_state():
     """Wipes all memory - useful for testing a fresh first run."""
-    for path in (CHECKPOINT_FILE, DECISIONS_FILE, PENDING_FILE):
+    for path in (CHECKPOINT_FILE, DECISIONS_FILE, PENDING_FILE, DRAFTS_FILE):
         if os.path.exists(path):
             os.remove(path)
+
+
+# ---------- Drafts (the action agent's output - your "outbox") ----------
+
+def load_drafts():
+    return _load_json(DRAFTS_FILE, default=[])
+
+
+def add_draft(draft_entry):
+    drafts = load_drafts()
+    drafts.append(draft_entry)
+    _save_json(DRAFTS_FILE, drafts)
