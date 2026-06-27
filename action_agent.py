@@ -37,22 +37,18 @@ ready-to-send drafts based on a decision the user already made.
 
 You will be given:
 - the category of the email (subscription, deal, or needs_reply)
-- the decision the user made (cancel, keep, act, ignore, reply)
+- the decision the user made (unsubscribe, keep, ignore, already_replied, suggest_reply)
 - the original email's subject, sender, and body
 
 Rules:
-- If category is "subscription" and decision is "cancel": write a
-  short, polite cancellation request addressed to the company, asking
-  them to cancel the subscription/service. Keep it under 80 words.
-- If category is "deal" and decision is "act": write a short note to
-  the USER (not the company) summarizing why this deal is worth taking
-  and what to do next. Keep it under 40 words.
-- If category is "needs_reply" and decision is "reply": write a short,
-  natural reply to the sender, matching the relationship implied by
-  the email (casual for friends/family, professional for colleagues
-  or professors). Keep it under 60 words.
-- For any other combination (decision is "keep" or "ignore"): the
-  draft_text should just say "No action needed."
+- If category is "subscription" and decision is "unsubscribe": write a
+  short, polite unsubscribe/cancellation request addressed to the company.
+  Keep it under 80 words.
+- If category is "needs_reply" and decision is "suggest_reply": write a
+  short, natural reply to the sender. Match the tone to the relationship
+  implied by the email (casual for friends/family, professional for
+  colleagues or professors). Keep it under 60 words.
+- For any other combination: the draft_text should just say "No action needed."
 
 Never invent account numbers, payment details, or personal information
 that wasn't in the original email. Always answer using the required
@@ -148,6 +144,6 @@ if __name__ == "__main__":
             "subject": "Your Netflix payment receipt",
             "body": "This confirms your monthly payment of EUR 17.99 was processed.",
         }
-        draft, summary = draft_action_with_ai(test_email, decision="cancel")
+        draft, summary = draft_action_with_ai(test_email, decision="unsubscribe")
         print(f"Summary: {summary}")
         print(f"Draft:\n{draft}")

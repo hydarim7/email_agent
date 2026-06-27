@@ -60,6 +60,12 @@ def save_decision(decision_key, decision_value):
     _save_json(DECISIONS_FILE, decisions)
 
 
+def delete_decision(decision_key):
+    decisions = load_decisions()
+    decisions.pop(decision_key, None)
+    _save_json(DECISIONS_FILE, decisions)
+
+
 # ---------- Pending list (things waiting for a decision) ----------
 
 def load_pending():
