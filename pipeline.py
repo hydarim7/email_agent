@@ -53,20 +53,23 @@ def fake_draft_text(email_like, decision):
     from_name = email_like.get("from_name", "there")
     subject = email_like.get("subject", "")
 
-    if category == "subscription" and decision == "unsubscribe":
+    if category == "subscription" and decision == "cancel":
         text = (
             f"Hi {from_name} team,\n\n"
-            f"Please cancel/unsubscribe me from this service.\n\n"
+            f"Please cancel my subscription associated with this account.\n\n"
             f"Thank you."
         )
-        summary = f"Unsubscribe request drafted for {from_name}"
-    elif category == "needs_reply" and decision == "suggest_reply":
+        summary = f"Cancellation request drafted for {from_name}"
+    elif category == "deal" and decision == "act":
+        text = f"Reminder: don't miss this deal from {from_name} - \"{subject}\"."
+        summary = f"Deal flagged as worth acting on: {from_name}"
+    elif category == "needs_reply" and decision == "reply":
         text = (
             f"Hi {from_name},\n\n"
-            f"Thanks for your message about \"{subject}\". I'll get back to you soon.\n\n"
+            f"Thanks for your message about \"{subject}\". I'll get back to you properly soon.\n\n"
             f"Best."
         )
-        summary = f"Reply suggestion drafted for {from_name}"
+        summary = f"Reply drafted for {from_name}"
     else:
         text = "No action needed."
         summary = "No action needed"
@@ -83,7 +86,7 @@ def maybe_draft_action(email_like, decision, action_client):
     properly. If not (TEST mode), it uses a simple template instead -
     this keeps the full loop testable with zero quota cost.
     """
-    if decision in ("keep", "ignore", "already_replied"):
+    if decision in ("keep", "ignore"):
         return None
 
     if action_client is not None:
@@ -217,13 +220,11 @@ def run_cycle(data_folder):
                 "id": email["id"],
                 "account": email["account"],
                 "category": category,
-                "subcategory": email.get("subcategory", ""),
                 "decision_key": key,
                 "subject": email["subject"],
                 "from_name": email["from_name"],
                 "from_email": email["from_email"],
                 "body": email["body"],
-                "timestamp": email.get("timestamp", ""),
             })
             newly_pending.append(email)
 

@@ -87,7 +87,6 @@ def normalize_email(raw, source_file):
         "body": raw.get("body"),
         "attachments": raw.get("attachments", []),
         "category": clean_category,
-        "subcategory": raw.get("subcategory", ""),
         "requires_decision": clean_category in DECISION_REQUIRED_CATEGORIES,
         "decision_key": decision_key,
         "source_file": source_file,
