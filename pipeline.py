@@ -225,6 +225,7 @@ def run_cycle(data_folder):
                 "from_name": email["from_name"],
                 "from_email": email["from_email"],
                 "body": email["body"],
+                "thread_history": email.get("thread_history", []),
             })
             newly_pending.append(email)
 

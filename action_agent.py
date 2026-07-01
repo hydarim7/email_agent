@@ -31,7 +31,7 @@ def _build_agent():
 
     return Agent(
         name="action_agent",
-        model="gemini-2.5-flash-lite",
+        model="gemini-2.5-flash-lite", # "gemini-1.5-flash", "gemini-2.5-flash-lite",
         instruction="""You are an assistant that writes short, polite,
 ready-to-send drafts based on a decision the user already made.
 
@@ -67,12 +67,22 @@ async def _draft_async(email, decision, runner):
     session = await runner.session_service.create_session(
         app_name="inbox_intelligence", user_id="local_user"
     )
+    thread = email.get("thread_history", [])
+    if thread:
+        thread_text = "\n---\n".join(
+            f"From: {m['from_name']}\n{m['body']}" for m in thread
+        )
+        thread_section = f"\nPrevious conversation (oldest first):\n{thread_text}\n---\n"
+    else:
+        thread_section = ""
+
     prompt = (
         f"Category: {email.get('category')}\n"
         f"Decision: {decision}\n"
         f"From: {email.get('from_name')} <{email.get('from_email')}>\n"
         f"Subject: {email.get('subject')}\n"
-        f"Body:\n{email.get('body')}"
+        f"{thread_section}"
+        f"Latest message:\n{email.get('body')}"
     )
 
     final_text = None

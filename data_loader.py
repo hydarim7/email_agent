@@ -90,6 +90,8 @@ def normalize_email(raw, source_file):
         "requires_decision": clean_category in DECISION_REQUIRED_CATEGORIES,
         "decision_key": decision_key,
         "source_file": source_file,
+        "thread_history": raw.get("thread_history", []),
+
     }
 
 
